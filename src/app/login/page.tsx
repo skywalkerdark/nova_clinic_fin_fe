@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 
 export default function LoginPage() {
-    const router = useRouter();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const { login } = useAuth();
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,91 +20,77 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            // Имитация запроса к NestJS бэкенду (POST http://localhost:3000/auth/login)
-            // Когда свяжем с бэкендом — подставим fetch()
-            if (username && password) {
-                // Записываем фейковый токен в куки на 1 день
-                Cookies.set("auth_token", "mock_jwt_token_12345", {
-                    expires: 1,
-                });
+            // Вызываем метод login из контекста (он сделает POST /auth/login)
+            await login({ username, password });
 
-                // Перенаправляем на главную
-                router.replace("/");
-            } else {
-                setError("Заполните все поля");
-            }
-        } catch (err) {
-            setError("Ошибка при входе в систему");
+            // После успешного входа перенаправляем на главную или в дашборд
+            console.log("Login successful, redirecting to dashboard...");
+            // Используем replace вместо push (чтобы юзер не возвращался на /login по стрелке "Назад")
+            // И refresh() заставит App Router перечитать Server Components
+            router.replace("/");
+            router.refresh();
+        } catch (err: any) {
+            // Подтягиваем сообщение об ошибке с бэкенда (например, "Неверный логин или пароль")
+            const message = err.response?.data?.message || "Ошибка авторизации";
+            setError(Array.isArray(message) ? message.join(", ") : message);
+            setLoading(false);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+            <form
+                onSubmit={handleSubmit}
+                className="w-full max-w-md p-8 bg-white rounded-xl shadow-md space-y-4 text-gray-700"
+            >
+                <h2 className="text-2xl font-bold text-center text-gray-800">
                     Вход в систему
                 </h2>
 
                 {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                    <div className="p-3 bg-red-100 border border-red-200 text-red-600 rounded-lg text-sm">
                         {error}
                     </div>
                 )}
 
-                <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4 text-gray-700"
-                    autoComplete="off"
-                >
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Username
-                        </label>
-                        <input
-                            type="text" // Используем text вместо email, чтобы Chrome не привязывал к нему логин
-                            // inputMode="email" // На мобилках покажет удобную клавиатуру с @
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            autoComplete="off"
-                            aria-autocomplete="none"
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Пароль
-                        </label>
-                        <input
-                            type="text" // Для Chrome это просто обычный текст!
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="off"
-                            aria-autocomplete="none"
-                            // CSS-свойство превращает вводимый текст в кружочки/точки:
-                            style={
-                                {
-                                    WebkitTextSecurity: "disc",
-                                } as React.CSSProperties
-                            }
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-                        />
-                    </div>
-
-                    {/* <button
-                        type="submit"
+                <div>
+                    <label className="block text-sm font-medium ">
+                        Имя пользователя
+                    </label>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none transition"
+                        required
                         disabled={loading}
-                        className="w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition disabled:opacity-50"
-                    >
-                        {loading ? "Вход..." : "Войти"}
-                    </button> */}
-                    <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? "Вход..." : "Войти"}
-                    </Button>
-                </form>
-            </div>
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium ">Пароль</label>
+                    <input
+                        type="text"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="off"
+                        aria-autocomplete="none"
+                        // CSS-свойство превращает вводимый текст в кружочки/точки:
+                        style={
+                            {
+                                WebkitTextSecurity: "disc",
+                            } as React.CSSProperties
+                        }
+                        className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none transition"
+                    />
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? "Входим..." : "Войти"}
+                </Button>
+            </form>
         </div>
     );
 }

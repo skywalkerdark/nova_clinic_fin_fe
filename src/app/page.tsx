@@ -1,32 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomePage() {
     const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const { user, accessToken, logout, isLoading } = useAuth();
 
     useEffect(() => {
-        // Проверяем наличие токена авторизации
-        const token = Cookies.get("auth_token");
-
-        if (!token) {
-            // Если токена нет — перенаправляем на страницу входа
+        console.log("Checking authentication status...");
+        // Проверяем авторизацию после завершения первичной загрузки сессии
+        if (!isLoading && !accessToken) {
+            console.log("User is not authenticated, redirecting to login...");
             router.replace("/login");
-        } else {
-            setIsAuthenticated(true);
         }
-    }, [router]);
+    }, [accessToken, isLoading, router]);
 
-    // Пока идет проверка токена — показываем спиннер или пустой экран
-    if (!isAuthenticated) {
+    // Пока контекст пробует тихо обновить токен — показываем загрузку
+    if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-gray-50">
                 <p className="text-gray-500">Проверка авторизации...</p>
             </div>
         );
+    }
+
+    if (!accessToken) {
+        return null; // Ждем срабатывания useEffect для редиректа
     }
 
     return (
@@ -36,13 +37,16 @@ export default function HomePage() {
                     Главная панель управления (Dashboard)
                 </h1>
                 <p className="text-gray-600 mb-6">
-                    Добро пожаловать! Вы авторизованы в системе финансового
-                    аудита.
+                    Добро пожаловать,{" "}
+                    <span className="font-semibold text-primary">
+                        {user?.username || "пользователь"}
+                    </span>
+                    ! Вы авторизованы в системе финансового аудита.
                 </p>
 
                 <button
-                    onClick={() => {
-                        Cookies.remove("auth_token");
+                    onClick={async () => {
+                        await logout();
                         router.replace("/login");
                     }}
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition"
