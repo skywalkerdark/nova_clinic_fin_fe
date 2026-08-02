@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginPage() {
         try {
             // Имитация запроса к NestJS бэкенду (POST http://localhost:3000/auth/login)
             // Когда свяжем с бэкендом — подставим fetch()
-            if (email && password) {
+            if (username && password) {
                 // Записываем фейковый токен в куки на 1 день
                 Cookies.set("auth_token", "mock_jwt_token_12345", {
                     expires: 1,
@@ -58,13 +58,13 @@ export default function LoginPage() {
                 >
                     <div>
                         <label className="block text-sm font-medium mb-1">
-                            Email
+                            Username
                         </label>
                         <input
                             type="text" // Используем text вместо email, чтобы Chrome не привязывал к нему логин
-                            inputMode="email" // На мобилках покажет удобную клавиатуру с @
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            // inputMode="email" // На мобилках покажет удобную клавиатуру с @
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             autoComplete="off"
                             aria-autocomplete="none"
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
