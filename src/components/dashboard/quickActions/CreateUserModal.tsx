@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { api } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 interface CreateUserModalProps {
@@ -24,6 +25,12 @@ export const CreateUserModal = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const handleClose = () => {
+        resetForm();
+        setError(null);
+        onClose();
+    };
+
     // Закрытие по клавише Escape
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +44,16 @@ export const CreateUserModal = ({
 
     if (!isOpen) return null;
 
+    const resetForm = () => {
+        setFormData({
+            username: "",
+            password: "",
+            firstName: "",
+            lastName: "",
+            role: "USER",
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -44,22 +61,15 @@ export const CreateUserModal = ({
 
         try {
             // TODO: Подключим твой инстанс api / axios
-            // await api.post('/users', formData);
+            await api.post("/users", formData);
             console.log("Создание пользователя:", formData);
 
             // Имитация успешного запроса
             await new Promise((res) => setTimeout(res, 600));
 
             // Сброс формы и закрытие
-            setFormData({
-                username: "",
-                password: "",
-                firstName: "",
-                lastName: "",
-                role: "USER",
-            });
             if (onSuccess) onSuccess();
-            onClose();
+            handleClose();
         } catch (err: any) {
             setError(
                 err.response?.data?.message ||
@@ -75,7 +85,7 @@ export const CreateUserModal = ({
             {/* 1. Бэкдроп / Оверлей */}
             <div
                 className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
+                onClick={handleClose}
             />
 
             {/* 2. Контейнер модального окна */}
@@ -86,7 +96,7 @@ export const CreateUserModal = ({
                         Создать пользователя
                     </h3>
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="text-gray-400 hover:text-white transition text-xl leading-none p-1"
                     >
                         ✕
@@ -110,13 +120,14 @@ export const CreateUserModal = ({
                             type="text"
                             required
                             value={formData.username}
+                            autoComplete="off"
                             onChange={(e) =>
                                 setFormData({
                                     ...formData,
                                     username: e.target.value,
                                 })
                             }
-                            placeholder="vyshnevskyi"
+                            placeholder="Username"
                             className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
                         />
                     </div>
@@ -126,7 +137,7 @@ export const CreateUserModal = ({
                             Пароль *
                         </label>
                         <input
-                            type="password"
+                            type="text"
                             required
                             value={formData.password}
                             onChange={(e) =>
@@ -134,6 +145,14 @@ export const CreateUserModal = ({
                                     ...formData,
                                     password: e.target.value,
                                 })
+                            }
+                            autoComplete="off"
+                            aria-autocomplete="none"
+                            // CSS-свойство превращает вводимый текст в кружочки/точки:
+                            style={
+                                {
+                                    WebkitTextSecurity: "disc",
+                                } as React.CSSProperties
                             }
                             placeholder="••••••••"
                             className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
@@ -203,7 +222,7 @@ export const CreateUserModal = ({
                     <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
                         >
                             Отмена

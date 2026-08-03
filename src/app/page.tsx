@@ -15,6 +15,14 @@ export default function HomePage() {
 
     useEffect(() => {
         console.log("Checking authentication status...");
+        console.log(
+            "isLoading:",
+            isLoading,
+            "accessToken:",
+            accessToken,
+            "user:",
+            user,
+        );
         // Проверяем авторизацию после завершения первичной загрузки сессии
         if (!isLoading && !accessToken) {
             console.log("User is not authenticated, redirecting to login...");

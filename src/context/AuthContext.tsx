@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, setInMemoryToken } from "@/lib/api";
 
 interface User {
     id: number;
@@ -35,10 +35,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
                 const { data } = await api.post("/auth/refresh");
                 setAccessToken(data.accessToken);
+                setInMemoryToken(data.accessToken); // Мгновенно обновляем молуль api
                 setUser(data.user);
                 // Если на бэке есть роут /auth/me или профиль — можно подтянуть юзера
             } catch (e) {
                 setAccessToken(null);
+                setInMemoryToken(null); // Мгновенно обновляем молуль api
                 setUser(null);
             } finally {
                 setIsLoading(false);
@@ -58,6 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Бэкенд сам установил httpOnly куку для refreshToken,
         // а нам возвращает accessToken и объект user:
         setAccessToken(data.accessToken);
+        setInMemoryToken(data.accessToken);
         setUser(data.user);
     };
 
@@ -68,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error("Ошибка при выходе:", e);
         } finally {
             setAccessToken(null);
+            setInMemoryToken(null);
             setUser(null);
         }
     };
