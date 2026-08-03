@@ -1,0 +1,223 @@
+"use client";
+
+import { Button } from "@/components/ui/Button";
+import { useState, useEffect } from "react";
+
+interface CreateUserModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void;
+}
+
+export const CreateUserModal = ({
+    isOpen,
+    onClose,
+    onSuccess,
+}: CreateUserModalProps) => {
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+        firstName: "",
+        lastName: "",
+        role: "USER", // По умолчанию обычный пользователь
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Закрытие по клавише Escape
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        if (isOpen) {
+            window.addEventListener("keydown", handleKeyDown);
+        }
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // TODO: Подключим твой инстанс api / axios
+            // await api.post('/users', formData);
+            console.log("Создание пользователя:", formData);
+
+            // Имитация успешного запроса
+            await new Promise((res) => setTimeout(res, 600));
+
+            // Сброс формы и закрытие
+            setFormData({
+                username: "",
+                password: "",
+                firstName: "",
+                lastName: "",
+                role: "USER",
+            });
+            if (onSuccess) onSuccess();
+            onClose();
+        } catch (err: any) {
+            setError(
+                err.response?.data?.message ||
+                    "Ошибка при создании пользователя",
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* 1. Бэкдроп / Оверлей */}
+            <div
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+                onClick={onClose}
+            />
+
+            {/* 2. Контейнер модального окна */}
+            <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10 p-6 space-y-5">
+                {/* Заголовок */}
+                <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+                    <h3 className="text-lg font-semibold text-white">
+                        Создать пользователя
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-white transition text-xl leading-none p-1"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                {/* Ошибка */}
+                {error && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                        {error}
+                    </div>
+                )}
+
+                {/* Форма */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                            Логин (Username) *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.username}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    username: e.target.value,
+                                })
+                            }
+                            placeholder="vyshnevskyi"
+                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                            Пароль *
+                        </label>
+                        <input
+                            type="password"
+                            required
+                            value={formData.password}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    password: e.target.value,
+                                })
+                            }
+                            placeholder="••••••••"
+                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                                Имя
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.firstName}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        firstName: e.target.value,
+                                    })
+                                }
+                                placeholder="Сергей"
+                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                                Фамилия
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.lastName}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        lastName: e.target.value,
+                                    })
+                                }
+                                placeholder="Вишневский"
+                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                            Роль в системе
+                        </label>
+                        <select
+                            value={formData.role}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    role: e.target.value,
+                                })
+                            }
+                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                        >
+                            <option value="USER">Кассир</option>
+                            <option value="ADMIN">Администратор</option>
+                            <option value="SUPERADMIN">
+                                Суперадминистратор
+                            </option>
+                        </select>
+                    </div>
+
+                    {/* Кнопки действия */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
+                        >
+                            Отмена
+                        </button>
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className="px-4 py-2 text-sm disabled:bg-[#01534d]/40 disabled:text-gray-500 text-white font-medium rounded-lg transition shadow-lg shadow-[#01534d]/20"
+                        >
+                            {isLoading ? "Создание..." : "Создать"}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};

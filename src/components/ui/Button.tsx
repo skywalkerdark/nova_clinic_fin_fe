@@ -12,7 +12,7 @@ export function Button({
     ...props
 }: ButtonProps) {
     const baseStyles =
-        "px-4 py-2 rounded-lg font-semibold transition-colors focus:outline-none disabled:opacity-50 cursor-pointer";
+        "px-4 py-2 rounded-lg transition-colors focus:outline-none disabled:opacity-50 cursor-pointer";
 
     const variants = {
         primary: "bg-primary hover:bg-primary-hover text-white shadow-sm",

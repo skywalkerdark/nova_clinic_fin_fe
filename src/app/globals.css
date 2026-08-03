@@ -28,3 +28,29 @@ body {
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Кастомный скроллбар */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px; /* Ширина вертикального скролла */
+    height: 6px; /* Высота горизонтального скролла */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.5); /* Фон дорожки (gray-900) */
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151; /* Цвет ползунка (gray-700) */
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4b5563; /* Цвет при наведении (gray-600) */
+}
+
+/* Для Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 rgba(17, 24, 39, 0.5);
+}

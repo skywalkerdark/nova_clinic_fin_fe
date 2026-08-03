@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -11,8 +11,17 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        console.log("Checking authentication status...");
+        // Проверяем авторизацию после завершения первичной загрузки сессии
+        if (user) {
+            router.replace("/");
+            router.refresh();
+        }
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,7 +96,11 @@ export default function LoginPage() {
                     />
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full font-semibold"
+                >
                     {loading ? "Входим..." : "Войти"}
                 </Button>
             </form>

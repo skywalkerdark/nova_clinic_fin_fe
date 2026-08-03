@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { MetricsBlock } from "@/components/dashboard/metrics/MetricsBlock";
+import { TransactionsTable } from "@/components/dashboard/transactions/TransactionsTable";
+import { QuickActions } from "@/components/dashboard/quickActions/QuickActions";
+import { CreateUserModal } from "@/components/dashboard/quickActions/CreateUserModal";
 
 export default function HomePage() {
     const router = useRouter();
     const { user, accessToken, logout, isLoading } = useAuth();
+    const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
 
     useEffect(() => {
         console.log("Checking authentication status...");
@@ -31,29 +36,23 @@ export default function HomePage() {
     }
 
     return (
-        <main className="min-h-screen p-8 bg-gray-100">
-            <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
-                <h1 className="text-2xl font-bold mb-4 text-gray-800">
-                    Главная панель управления (Dashboard)
-                </h1>
-                <p className="text-gray-600 mb-6">
-                    Добро пожаловать,{" "}
-                    <span className="font-semibold text-primary">
-                        {user?.username || "пользователь"}
-                    </span>
-                    ! Вы авторизованы в системе финансового аудита.
-                </p>
+        <main className="flex-1 p-6 max-w-7xl h-full mx-auto w-full flex flex-col gap-6 overflow-hidden">
+            <MetricsBlock />
 
-                <button
-                    onClick={async () => {
-                        await logout();
-                        router.replace("/login");
-                    }}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition"
-                >
-                    Выйти из системы
-                </button>
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0 overflow-hidden">
+                <TransactionsTable />
+                <QuickActions onCreateUser={() => setIsCreateUserOpen(true)} />
             </div>
+
+            {/* Модалка создания пользователя */}
+            <CreateUserModal
+                isOpen={isCreateUserOpen}
+                onClose={() => setIsCreateUserOpen(false)}
+                onSuccess={() => {
+                    // Тут в будущем можно триггернуть обновление списка пользователей или toast
+                    console.log("Пользователь успешно создан!");
+                }}
+            />
         </main>
     );
 }

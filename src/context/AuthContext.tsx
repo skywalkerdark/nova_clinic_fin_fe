@@ -7,6 +7,8 @@ interface User {
     id: number;
     username: string;
     role: "USER" | "ADMIN" | "SUPERADMIN";
+    firstName?: string;
+    lastName?: string;
 }
 
 interface AuthContextType {
@@ -33,6 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
                 const { data } = await api.post("/auth/refresh");
                 setAccessToken(data.accessToken);
+                setUser(data.user);
                 // Если на бэке есть роут /auth/me или профиль — можно подтянуть юзера
             } catch (e) {
                 setAccessToken(null);
