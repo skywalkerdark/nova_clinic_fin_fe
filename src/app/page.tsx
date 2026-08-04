@@ -6,12 +6,14 @@ import { useAuth } from "@/context/AuthContext";
 import { MetricsBlock } from "@/components/dashboard/metrics/MetricsBlock";
 import { TransactionsTable } from "@/components/dashboard/transactions/TransactionsTable";
 import { QuickActions } from "@/components/dashboard/quickActions/QuickActions";
-import { CreateUserModal } from "@/components/dashboard/quickActions/CreateUserModal";
+import { CreateUserModal } from "@/components/dashboard/quickActions/modals/CreateUserModal";
+import { CreateTransactionModal } from "@/components/dashboard/quickActions/modals/CreateTransactionModal";
 
 export default function HomePage() {
     const router = useRouter();
     const { user, accessToken, logout, isLoading } = useAuth();
     const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+    const [isCreateTxOpen, setIsCreateTxOpen] = useState(false); // <-- State для транзакций
 
     useEffect(() => {
         console.log("Checking authentication status...");
@@ -49,7 +51,10 @@ export default function HomePage() {
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0 overflow-hidden">
                 <TransactionsTable />
-                <QuickActions onCreateUser={() => setIsCreateUserOpen(true)} />
+                <QuickActions
+                    onCreateUser={() => setIsCreateUserOpen(true)}
+                    onCreateTransaction={() => setIsCreateTxOpen(true)}
+                />
             </div>
 
             {/* Модалка создания пользователя */}
@@ -59,6 +64,16 @@ export default function HomePage() {
                 onSuccess={() => {
                     // Тут в будущем можно триггернуть обновление списка пользователей или toast
                     console.log("Пользователь успешно создан!");
+                }}
+            />
+
+            {/* Модалка проведения транзакции */}
+            <CreateTransactionModal
+                isOpen={isCreateTxOpen}
+                onClose={() => setIsCreateTxOpen(false)}
+                onSuccess={() => {
+                    console.log("Транзакция успешно проведена!");
+                    // В будущем здесь вызовем refreshTransactions() для обновления таблицы
                 }}
             />
         </main>

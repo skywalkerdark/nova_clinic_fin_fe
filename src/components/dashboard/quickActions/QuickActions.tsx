@@ -5,9 +5,13 @@ import { Button } from "../../ui/Button";
 
 interface QuickActionsProps {
     onCreateUser?: () => void;
+    onCreateTransaction?: () => void; // <-- Добавили пропс
 }
 
-export const QuickActions = ({ onCreateUser }: QuickActionsProps) => {
+export const QuickActions = ({
+    onCreateUser,
+    onCreateTransaction,
+}: QuickActionsProps) => {
     const { user } = useAuth();
     return (
         <section className="bg-gray-800/40 border border-gray-800 rounded-xl p-5 shrink-0 flex flex-col gap-4">
@@ -15,7 +19,7 @@ export const QuickActions = ({ onCreateUser }: QuickActionsProps) => {
                 Быстрые действия
             </h2>
             <Button
-                onClick={() => {}}
+                onClick={onCreateTransaction}
                 className="w-full flex items-center justify-between px-4 py-2 text-white rounded-lg transition"
             >
                 <span>Добавить платёж</span>
