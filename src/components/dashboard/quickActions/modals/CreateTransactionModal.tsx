@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button"; // твой компонент кнопки
+import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/api";
 
 interface Doctor {
@@ -14,6 +14,12 @@ interface Doctor {
 interface Cashbox {
     id: number;
     name: string;
+}
+
+interface PaymentMethod {
+    id: number;
+    name: string;
+    code: string;
 }
 
 interface CreateTransactionModalProps {
@@ -30,12 +36,13 @@ export const CreateTransactionModal = ({
     // Справочники из базы
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [cashboxes, setCashboxes] = useState<Cashbox[]>([]);
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
     // Состояние формы
     const [formData, setFormData] = useState({
         amount: "",
         currency: "UAH",
-        paymentMethod: "CASH",
+        paymentMethodId: "",
         patientFullName: "",
         doctorId: "",
         cashboxId: "",
@@ -45,7 +52,7 @@ export const CreateTransactionModal = ({
     const [isFetchingOptions, setIsFetchingOptions] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Загружаем списки врачей и касс при открытии модального окна
+    // Загружаем списки врачей, касс и способов оплаты при открытии модального окна
     useEffect(() => {
         if (!isOpen) return;
 
@@ -53,29 +60,37 @@ export const CreateTransactionModal = ({
             setIsFetchingOptions(true);
             setError(null);
             try {
-                const [doctorsRes, cashboxesRes] = await Promise.all([
-                    api.get<Doctor[]>("/doctors?activeOnly=true"),
-                    api.get<Cashbox[]>("/cashboxes"),
-                ]);
+                const [doctorsRes, cashboxesRes, paymentMethodsRes] =
+                    await Promise.all([
+                        api.get<Doctor[]>("/doctors?activeOnly=true"),
+                        api.get<Cashbox[]>("/cashboxes"),
+                        api.get<PaymentMethod[]>("/payment-methods"),
+                    ]);
 
                 setDoctors(doctorsRes.data);
                 setCashboxes(cashboxesRes.data);
+                setPaymentMethods(paymentMethodsRes.data);
 
-                // Устанавливаем дефолтную кассу и врача, если они есть
-                if (cashboxesRes.data.length > 0) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        cashboxId: String(cashboxesRes.data[0].id),
-                    }));
-                }
-                if (doctorsRes.data.length > 0) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        doctorId: String(doctorsRes.data[0].id),
-                    }));
-                }
+                // Устанавливаем дефолтные значения из загруженных справочников
+                setFormData((prev) => ({
+                    ...prev,
+                    cashboxId:
+                        cashboxesRes.data.length > 0
+                            ? String(cashboxesRes.data[0].id)
+                            : "",
+                    doctorId:
+                        doctorsRes.data.length > 0
+                            ? String(doctorsRes.data[0].id)
+                            : "",
+                    paymentMethodId:
+                        paymentMethodsRes.data.length > 0
+                            ? String(paymentMethodsRes.data[0].id)
+                            : "",
+                }));
             } catch (err: any) {
-                setError("Не удалось загрузить справочники (врачи/кассы)");
+                setError(
+                    "Не удалось загрузить справочники (врачи/кассы/способы оплаты)",
+                );
             } finally {
                 setIsFetchingOptions(false);
             }
@@ -99,7 +114,8 @@ export const CreateTransactionModal = ({
         setFormData({
             amount: "",
             currency: "UAH",
-            paymentMethod: "CASH",
+            paymentMethodId:
+                paymentMethods.length > 0 ? String(paymentMethods[0].id) : "",
             patientFullName: "",
             doctorId: doctors.length > 0 ? String(doctors[0].id) : "",
             cashboxId: cashboxes.length > 0 ? String(cashboxes[0].id) : "",
@@ -124,11 +140,17 @@ export const CreateTransactionModal = ({
             return;
         }
 
+        if (!formData.paymentMethodId) {
+            setError("Выберите способ оплаты");
+            setIsLoading(false);
+            return;
+        }
+
         try {
             await api.post("/transactions", {
                 amount: numAmount,
                 currency: formData.currency,
-                paymentMethod: formData.paymentMethod,
+                paymentMethodId: Number(formData.paymentMethodId), // Передаем ID новой сущности
                 patientFullName: formData.patientFullName || undefined,
                 doctorId: Number(formData.doctorId),
                 cashboxId: Number(formData.cashboxId),
@@ -148,36 +170,37 @@ export const CreateTransactionModal = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* 1. Бэкдроп */}
+            {/* Бэкдроп */}
             <div
-                className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+                className="fixed inset-0 bg-black/40 dark:bg-black/70 backdrop-blur-sm transition-opacity"
                 onClick={handleClose}
             />
 
-            {/* 2. Модальное окно */}
-            <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10 p-6 space-y-5">
+            {/* Модальное окно */}
+            <div className="relative w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10 p-6 space-y-5">
                 {/* Шапка */}
-                <div className="flex items-center justify-between border-b border-gray-800 pb-4">
-                    <h3 className="text-lg font-semibold text-white">
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Новая транзакция
                     </h3>
-                    <button
+                    <Button
                         onClick={handleClose}
-                        className="text-gray-400 hover:text-white transition text-xl leading-none p-1"
+                        variant="outline"
+                        className="text-xl p-1"
                     >
                         ✕
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Ошибка */}
                 {error && (
-                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                    <div className="p-3 rounded-lg bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-xs">
                         {error}
                     </div>
                 )}
 
                 {isFetchingOptions ? (
-                    <div className="py-8 text-center text-sm text-gray-400">
+                    <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                         Загрузка справочников...
                     </div>
                 ) : (
@@ -185,7 +208,7 @@ export const CreateTransactionModal = ({
                         {/* Сумма и Валюта */}
                         <div className="grid grid-cols-3 gap-3">
                             <div className="col-span-2">
-                                <label className="block text-xs font-medium text-gray-400 mb-1">
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                     Сумма *
                                 </label>
                                 <input
@@ -200,11 +223,11 @@ export const CreateTransactionModal = ({
                                         })
                                     }
                                     placeholder="1500.00 или -500"
-                                    className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1">
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                     Валюта
                                 </label>
                                 <select
@@ -215,7 +238,7 @@ export const CreateTransactionModal = ({
                                             currency: e.target.value,
                                         })
                                     }
-                                    className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 transition"
                                 >
                                     <option value="UAH">UAH (₴)</option>
                                     <option value="USD">USD ($)</option>
@@ -224,32 +247,33 @@ export const CreateTransactionModal = ({
                             </div>
                         </div>
 
-                        {/* Способ оплаты */}
+                        {/* Способ оплаты (Динамический выбор из БД) */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 Способ оплаты *
                             </label>
                             <select
-                                value={formData.paymentMethod}
+                                required
+                                value={formData.paymentMethodId}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        paymentMethod: e.target.value,
+                                        paymentMethodId: e.target.value,
                                     })
                                 }
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 transition"
                             >
-                                <option value="CASH">Наличные</option>
-                                <option value="CARD">Карта / Терминал</option>
-                                <option value="BANK_TRANSFER">
-                                    Расчетный счет
-                                </option>
+                                {paymentMethods.map((pm) => (
+                                    <option key={pm.id} value={pm.id}>
+                                        {pm.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
-                        {/* Врач (Выбор из базы) */}
+                        {/* Врач */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 Врач *
                             </label>
                             <select
@@ -261,7 +285,7 @@ export const CreateTransactionModal = ({
                                         doctorId: e.target.value,
                                     })
                                 }
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 transition"
                             >
                                 {doctors.map((doc) => (
                                     <option key={doc.id} value={doc.id}>
@@ -274,9 +298,9 @@ export const CreateTransactionModal = ({
                             </select>
                         </div>
 
-                        {/* Касса (Выбор из базы) */}
+                        {/* Касса */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 Касса *
                             </label>
                             <select
@@ -288,7 +312,7 @@ export const CreateTransactionModal = ({
                                         cashboxId: e.target.value,
                                     })
                                 }
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 transition"
                             >
                                 {cashboxes.map((cb) => (
                                     <option key={cb.id} value={cb.id}>
@@ -298,9 +322,9 @@ export const CreateTransactionModal = ({
                             </select>
                         </div>
 
-                        {/* Пациент (Ручной ввод) */}
+                        {/* Пациент */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 ФИО Пациента
                             </label>
                             <input
@@ -313,24 +337,20 @@ export const CreateTransactionModal = ({
                                     })
                                 }
                                 placeholder="Иванов Иван Иванович"
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                             />
                         </div>
 
                         {/* Кнопки */}
-                        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-                            <button
+                        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={handleClose}
-                                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
                             >
                                 Отмена
-                            </button>
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="px-4 py-2 text-sm disabled:opacity-50 text-white font-medium rounded-lg transition shadow-lg shadow-blue-500/20"
-                            >
+                            </Button>
+                            <Button type="submit" disabled={isLoading}>
                                 {isLoading ? "Проведение..." : "Провести"}
                             </Button>
                         </div>

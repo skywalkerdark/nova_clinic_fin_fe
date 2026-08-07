@@ -84,28 +84,29 @@ export const CreateUserModal = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* 1. Бэкдроп / Оверлей */}
             <div
-                className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+                className="fixed inset-0 bg-black/40 dark:bg-black/70 backdrop-blur-sm transition-opacity"
                 onClick={handleClose}
             />
 
             {/* 2. Контейнер модального окна */}
-            <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10 p-6 space-y-5">
+            <div className="relative w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10 p-6 space-y-5">
                 {/* Заголовок */}
-                <div className="flex items-center justify-between border-b border-gray-800 pb-4">
-                    <h3 className="text-lg font-semibold text-white">
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Создать пользователя
                     </h3>
-                    <button
+                    <Button
                         onClick={handleClose}
-                        className="text-gray-400 hover:text-white transition text-xl leading-none p-1"
+                        variant="outline"
+                        className="text-xl p-1"
                     >
                         ✕
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Ошибка */}
                 {error && (
-                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                    <div className="p-3 rounded-lg bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-xs">
                         {error}
                     </div>
                 )}
@@ -113,7 +114,7 @@ export const CreateUserModal = ({
                 {/* Форма */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                             Логин (Username) *
                         </label>
                         <input
@@ -128,12 +129,12 @@ export const CreateUserModal = ({
                                 })
                             }
                             placeholder="Username"
-                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                             Пароль *
                         </label>
                         <input
@@ -155,13 +156,13 @@ export const CreateUserModal = ({
                                 } as React.CSSProperties
                             }
                             placeholder="••••••••"
-                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 Имя
                             </label>
                             <input
@@ -174,11 +175,11 @@ export const CreateUserModal = ({
                                     })
                                 }
                                 placeholder="Сергей"
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 Фамилия
                             </label>
                             <input
@@ -191,13 +192,13 @@ export const CreateUserModal = ({
                                     })
                                 }
                                 placeholder="Вишневский"
-                                className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-sky-500 transition"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                             Роль в системе
                         </label>
                         <select
@@ -208,7 +209,7 @@ export const CreateUserModal = ({
                                     role: e.target.value,
                                 })
                             }
-                            className="w-full px-3 py-2 bg-gray-800/60 border border-gray-700/60 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 transition"
                         >
                             <option value="USER">Кассир</option>
                             <option value="ADMIN">Администратор</option>
@@ -219,19 +220,16 @@ export const CreateUserModal = ({
                     </div>
 
                     {/* Кнопки действия */}
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-                        <button
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={handleClose}
-                            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
+                            className=""
                         >
                             Отмена
-                        </button>
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="px-4 py-2 text-sm disabled:bg-[#01534d]/40 disabled:text-gray-500 text-white font-medium rounded-lg transition shadow-lg shadow-[#01534d]/20"
-                        >
+                        </Button>
+                        <Button type="submit" disabled={isLoading} className="">
                             {isLoading ? "Создание..." : "Создать"}
                         </Button>
                     </div>

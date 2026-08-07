@@ -4,16 +4,19 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MetricsBlock } from "@/components/dashboard/metrics/MetricsBlock";
-import { TransactionsTable } from "@/components/dashboard/transactions/TransactionsTable";
+import { TransactionsContainer } from "@/components/dashboard/transactions/TransactionsContainer";
 import { QuickActions } from "@/components/dashboard/quickActions/QuickActions";
 import { CreateUserModal } from "@/components/dashboard/quickActions/modals/CreateUserModal";
 import { CreateTransactionModal } from "@/components/dashboard/quickActions/modals/CreateTransactionModal";
+import { CreatePaymentMethodModal } from "@/components/dashboard/quickActions/modals/CreatePaymentMethodModal";
 
 export default function HomePage() {
     const router = useRouter();
     const { user, accessToken, logout, isLoading } = useAuth();
     const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
     const [isCreateTxOpen, setIsCreateTxOpen] = useState(false); // <-- State для транзакций
+    const [isCreatePaymentMethodOpen, setIsCreatePaymentMethodOpen] =
+        useState(false); // <-- State для методов оплаты
 
     useEffect(() => {
         console.log("Checking authentication status...");
@@ -35,8 +38,8 @@ export default function HomePage() {
     // Пока контекст пробует тихо обновить токен — показываем загрузку
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-gray-50">
-                <p className="text-gray-500">Проверка авторизации...</p>
+            <div className="flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-950 text-gray-700 dark:text-gray-300">
+                <p>Проверка авторизации...</p>
             </div>
         );
     }
@@ -50,10 +53,13 @@ export default function HomePage() {
             <MetricsBlock />
 
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0 overflow-hidden">
-                <TransactionsTable />
+                <TransactionsContainer />
                 <QuickActions
                     onCreateUser={() => setIsCreateUserOpen(true)}
                     onCreateTransaction={() => setIsCreateTxOpen(true)}
+                    onCreatePaymentMethod={() =>
+                        setIsCreatePaymentMethodOpen(true)
+                    }
                 />
             </div>
 
@@ -73,6 +79,16 @@ export default function HomePage() {
                 onClose={() => setIsCreateTxOpen(false)}
                 onSuccess={() => {
                     console.log("Транзакция успешно проведена!");
+                    // В будущем здесь вызовем refreshTransactions() для обновления таблицы
+                }}
+            />
+
+            {/* Модалка добавления способа оплаты */}
+            <CreatePaymentMethodModal
+                isOpen={isCreatePaymentMethodOpen}
+                onClose={() => setIsCreatePaymentMethodOpen(false)}
+                onSuccess={() => {
+                    console.log("Метод оплаты успешно создан!");
                     // В будущем здесь вызовем refreshTransactions() для обновления таблицы
                 }}
             />

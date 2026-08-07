@@ -49,37 +49,39 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
             <form
                 onSubmit={handleSubmit}
-                className="w-full max-w-md p-8 bg-white rounded-xl shadow-md space-y-4 text-gray-700"
+                className="w-full max-w-md p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg space-y-4 text-gray-900 dark:text-gray-100"
             >
-                <h2 className="text-2xl font-bold text-center text-gray-800">
+                <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
                     Вход в систему
                 </h2>
 
                 {error && (
-                    <div className="p-3 bg-red-100 border border-red-200 text-red-600 rounded-lg text-sm">
+                    <div className="p-3 bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
                         {error}
                     </div>
                 )}
 
                 <div>
-                    <label className="block text-sm font-medium ">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Имя пользователя
                     </label>
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none transition"
+                        className="w-full mt-1 p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-1 focus:ring-primary dark:focus:ring-primary/70 outline-none transition"
                         required
                         disabled={loading}
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium ">Пароль</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Пароль
+                    </label>
                     <input
                         type="text"
                         value={password}
@@ -92,7 +94,7 @@ export default function LoginPage() {
                                 WebkitTextSecurity: "disc",
                             } as React.CSSProperties
                         }
-                        className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary outline-none transition"
+                        className="w-full mt-1 p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-1 focus:ring-primary dark:focus:ring-primary/70 outline-none transition"
                     />
                 </div>
 
