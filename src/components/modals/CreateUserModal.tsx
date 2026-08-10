@@ -62,7 +62,6 @@ export const CreateUserModal = ({
         try {
             // TODO: Подключим твой инстанс api / axios
             await api.post("/users", formData);
-            console.log("Создание пользователя:", formData);
 
             // Имитация успешного запроса
             await new Promise((res) => setTimeout(res, 600));

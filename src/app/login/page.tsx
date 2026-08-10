@@ -15,7 +15,6 @@ export default function LoginPage() {
     const router = useRouter();
 
     useEffect(() => {
-        console.log("Checking authentication status Login...", user);
         // Проверяем авторизацию после завершения первичной загрузки сессии
         if (user) {
             router.replace("/");
@@ -31,13 +30,6 @@ export default function LoginPage() {
         try {
             // Вызываем метод login из контекста (он сделает POST /auth/login)
             await login({ username, password });
-
-            // После успешного входа перенаправляем на главную или в дашборд
-            console.log("Login successful, redirecting to dashboard...");
-            // Используем replace вместо push (чтобы юзер не возвращался на /login по стрелке "Назад")
-            // И refresh() заставит App Router перечитать Server Components
-            // router.replace("/");
-            // router.refresh();
         } catch (err: any) {
             // Подтягиваем сообщение об ошибке с бэкенда (например, "Неверный логин или пароль")
             const message = err.response?.data?.message || "Ошибка авторизации";

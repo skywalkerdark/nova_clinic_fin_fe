@@ -10,7 +10,7 @@ export const setInMemoryToken = (token: string | null) => {
 export const getInMemoryToken = () => inMemoryToken;
 
 export const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
     withCredentials: true, // Обязательно: передает httpOnly куки на бэкенд (4000 порт)
     headers: {
         "Content-Type": "application/json",

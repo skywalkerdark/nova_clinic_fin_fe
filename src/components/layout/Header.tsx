@@ -1,19 +1,25 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { Settings, Home } from "lucide-react";
+
+import { useAuth } from "@/context/AuthContext";
+
 import { Button } from "../ui/Button";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import Link from "next/link";
 
 export const Header = () => {
     const { user, logout, accessToken } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     // Не показываем Хедер, если юзер не авторизован (например, на странице /login)
     if (!accessToken) return null;
 
-    console.log("Rendering Header for user:", user);
+    const isSettingsPage = pathname.startsWith("/settings");
+    const canAccessSettings = user?.role === "SUPERADMIN";
 
     const handleLogout = async () => {
         await logout();
@@ -44,6 +50,28 @@ export const Header = () => {
             </div>
 
             <div className="flex items-center gap-4">
+                {/* Кнопка «Настройки» (шестерёнка) */}
+                {canAccessSettings && (
+                    <Link
+                        href={isSettingsPage ? "/" : "/settings"}
+                        title={
+                            isSettingsPage
+                                ? "Вернуться на главную"
+                                : "Настройки системы"
+                        }
+                        className={`p-2 rounded-lg border transition-all ${
+                            isSettingsPage
+                                ? "bg-teal-100/60 dark:bg-[#2dd4bf]/10 border-teal-300 dark:border-[#2dd4bf]/30 text-teal-700 dark:text-[#5eead4]"
+                                : "border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+                        }`}
+                    >
+                        {isSettingsPage ? (
+                            <Home className="w-5 h-5" />
+                        ) : (
+                            <Settings className="w-5 h-5" />
+                        )}
+                    </Link>
+                )}
                 <ThemeToggle />
                 <div className="text-right text-sm">
                     <p className="font-medium text-gray-800 dark:text-gray-200">

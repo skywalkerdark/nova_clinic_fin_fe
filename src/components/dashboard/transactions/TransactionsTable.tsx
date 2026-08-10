@@ -62,7 +62,6 @@ export const TransactionsTable = ({
             const res = await api.get(endpoint);
             const data = res.data;
 
-            console.log("Fetched transactions data:", data);
             // ЗАЩИТА: Проверяем, массив ли пришёл с бэкенда
             if (Array.isArray(data)) {
                 setTransactions(data);
@@ -95,8 +94,9 @@ export const TransactionsTable = ({
 
     // WebSocket подписка
     useEffect(() => {
-        const socketUrl =
-            process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+        const rawUrl = process.env.NEXT_PUBLIC_API_URL!;
+        // Отсекает /api и всё, что идет за ним
+        const socketUrl = rawUrl.replace(/\/api(\/.*)?$/, "");
         const socket: Socket = io(socketUrl, {
             withCredentials: true,
         });
