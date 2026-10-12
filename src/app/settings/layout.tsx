@@ -57,7 +57,7 @@ export default function SettingsLayout({
                 </aside>
 
                 {/* Область контента (сюда подставляются page.tsx из вложенных папок) */}
-                <main className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm min-h-125">
+                <main className="flex flex-col h-full flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm min-h-125">
                     {children}
                 </main>
             </div>
