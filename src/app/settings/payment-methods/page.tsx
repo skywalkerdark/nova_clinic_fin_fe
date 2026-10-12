@@ -1,65 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import { Edit, Trash2, Plus, Power } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PaymentMethodModal } from "@/components/modals/PaymentMethodModal";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
-
-interface PaymentMethod {
-    id: number;
-    name: string;
-    code: string;
-    isActive: boolean;
-}
+import { usePaymentMethods, PaymentMethod } from "@/hooks/usePaymentMethods";
 
 export default function PaymentMethodsTab() {
-    const [methods, setMethods] = useState<PaymentMethod[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const {
+        methods,
+        isLoading,
+        isDeleting,
+        deleteError,
+        setDeleteError,
+        fetchMethods,
+        toggleActive,
+        deleteMethod,
+    } = usePaymentMethods();
+
+    // Чисто визуальные состояния UI
     const [editingItem, setEditingItem] = useState<PaymentMethod | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Состояния для диалога удаления
     const [deletingItem, setDeletingItem] = useState<PaymentMethod | null>(
         null,
     );
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    const fetchMethods = async () => {
-        setIsLoading(true);
-        try {
-            const { data } = await api.get<PaymentMethod[]>(
-                "/payment-methods/all",
-            );
-            setMethods(data);
-        } catch (err) {
-            console.error("Ошибка загрузки", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Быстрое переключение активности (isActive)
-    const handleToggleActive = async (item: PaymentMethod) => {
-        try {
-            // Оптимистично обновляем UI
-            setMethods((prev) =>
-                prev.map((m) =>
-                    m.id === item.id ? { ...m, isActive: !m.isActive } : m,
-                ),
-            );
-
-            await api.patch(`/payment-methods/${item.id}`, {
-                isActive: !item.isActive,
-            });
-        } catch (err) {
-            console.error("Не удалось изменить статус", err);
-            // Откатываем назад при ошибке
-            fetchMethods();
-        }
-    };
 
     const handleCreate = () => {
         setEditingItem(null);
@@ -78,27 +43,10 @@ export default function PaymentMethodsTab() {
 
     const handleConfirmDelete = async () => {
         if (!deletingItem) return;
-        setIsDeleting(true);
-        setDeleteError(null);
 
-        try {
-            await api.delete(`/payment-methods/${deletingItem.id}`);
-            setDeletingItem(null);
-            fetchMethods();
-        } catch (err: any) {
-            setDeleteError(
-                err.response?.data?.message ||
-                    "Не удалось удалить метод оплаты",
-            );
-            setDeletingItem(null);
-        } finally {
-            setIsDeleting(false);
-        }
+        const success = await deleteMethod(deletingItem.id);
+        setDeletingItem(null);
     };
-
-    useEffect(() => {
-        fetchMethods();
-    }, []);
 
     return (
         <div className="space-y-6">
@@ -164,12 +112,9 @@ export default function PaymentMethodsTab() {
                                             {pm.code}
                                         </span>
                                     </td>
-                                    {/* Новая колонка: Статус с кнопкой переключения */}
                                     <td className="p-4">
                                         <button
-                                            onClick={() =>
-                                                handleToggleActive(pm)
-                                            }
+                                            onClick={() => toggleActive(pm)}
                                             title={
                                                 pm.isActive
                                                     ? "Деактивировать"
@@ -194,11 +139,8 @@ export default function PaymentMethodsTab() {
                                         </button>
                                     </td>
                                     <td className="p-4 flex items-center justify-end gap-1">
-                                        {/* Быстрая кнопка ВКЛ/ВЫКЛ */}
                                         <button
-                                            onClick={() =>
-                                                handleToggleActive(pm)
-                                            }
+                                            onClick={() => toggleActive(pm)}
                                             className={`p-2 rounded transition ${
                                                 pm.isActive
                                                     ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
@@ -244,7 +186,7 @@ export default function PaymentMethodsTab() {
                 onSuccess={fetchMethods}
             />
 
-            {/* Модальное окно подтверждения удаления */}
+            {/* Подтверждение удаления */}
             <ConfirmModal
                 isOpen={Boolean(deletingItem)}
                 title="Удаление способа оплаты"
